@@ -498,9 +498,8 @@ function hideErr(n){
 function goNext(){
   if(!validate(cur)) return;
   if(cur===TOTAL){
-    cur = TOTAL+1;
-    updateProgress();
-    showStep(TOTAL+1);
+    // Google フォームに回答を送信
+    window.location.href = 'https://forms.gle/NkbE5gEvVaFuvdfT6';
     return;
   }
   cur++;
