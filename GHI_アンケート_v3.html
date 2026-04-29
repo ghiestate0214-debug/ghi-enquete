@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GHI お客様アンケート</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --purple:#5B2D8E;--purple-dark:#3D1C6A;--purple-light:#EDE8FF;
+  --purple-mid:#7B3FA8;--gold:#C8A000;--gold-light:#FFF8DC;
+  --white:#fff;--gray:#F7F7F7;--text:#222;--muted:#666;
+  --red:#CC3333;--red-light:#FFF0F0;
+}
+body{font-family:'Noto Sans JP',sans-serif;background:#F0EBF8;min-height:100vh;padding-bottom:40px}
+
+.sticky-top{background:var(--purple-dark);position:sticky;top:0;z-index:100}
+.top-bar{padding:14px 16px 10px}
+.top-bar-inner{display:flex;align-items:center;justify-content:space-between;max-width:480px;margin:0 auto}
+.logo{color:#fff;font-size:22px;font-weight:700;letter-spacing:3px;display:flex;align-items:center;gap:6px}
+.logo-chick{font-size:24px}
+
+.prize-bar{background:#FFD740;text-align:center;padding:9px 12px;font-size:12px;font-weight:700;color:var(--purple-dark)}
+.prize-bar span{font-size:14px}
+
+.prog-wrap{background:var(--purple-dark);padding:8px 16px 10px}
+.prog-wrap-inner{max-width:480px;margin:0 auto}
+.prog-label{font-size:11px;color:#fff;margin-bottom:4px;display:flex;justify-content:space-between}
+.prog-bar{height:5px;background:rgba(255,255,255,0.25);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:var(--gold);border-radius:3px;transition:width 0.4s ease;width:0%}
+.step-dots{display:flex;justify-content:center;gap:6px;padding:10px 0 0}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.3);transition:all 0.3s}
+.dot.active{background:#fff;width:20px;border-radius:4px}
+
+.container{max-width:480px;margin:0 auto;padding:0 12px}
+.step{display:none;animation:fadeUp 0.3s ease}
+.step.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:#fff;border-radius:16px;margin:14px 0;overflow:hidden;box-shadow:0 2px 12px rgba(91,45,142,0.10)}
+.card-head{background:linear-gradient(90deg,var(--purple),var(--purple-mid));padding:11px 16px;display:flex;align-items:center;gap:10px}
+.q-badge{background:var(--gold);color:#fff;font-size:11px;font-weight:700;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.q-title{color:#fff;font-size:14px;font-weight:700}
+.q-note{color:rgba(255,255,255,0.75);font-size:10px;margin-left:auto;white-space:nowrap}
+.card-body{padding:14px 14px 12px}
+
+/* オプションボタン */
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opts.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.opt-btn{border:1.5px solid #DDD;border-radius:12px;padding:11px 12px;font-size:13px;font-family:inherit;font-weight:500;color:var(--text);background:#fff;cursor:pointer;text-align:left;transition:all 0.15s;line-height:1.4;display:flex;align-items:center;gap:8px;width:100%}
+.opt-btn::before{content:'';width:18px;height:18px;border-radius:50%;border:2px solid #CCC;flex-shrink:0;transition:all 0.15s}
+.opt-btn.sel{border-color:var(--purple);background:var(--purple-light);color:var(--purple)}
+.opt-btn.sel::before{background:var(--purple);border-color:var(--purple);box-shadow:inset 0 0 0 3px #fff}
+.opt-btn:active{transform:scale(0.98)}
+
+.income-btn{border:1.5px solid #DDD;border-radius:10px;padding:10px 6px;font-size:12px;font-family:inherit;font-weight:500;color:var(--text);background:#fff;cursor:pointer;text-align:center;transition:all 0.15s;width:100%}
+.income-btn.sel{border-color:var(--gold);background:var(--gold-light);color:#7a5800}
+.income-btn:active{transform:scale(0.97)}
+
+/* YES/NO */
+.yn-item{margin-bottom:12px}
+.yn-q{font-size:13px;color:var(--text);margin-bottom:6px;line-height:1.5}
+.yn-sub{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;padding-left:4px;border-left:2px solid var(--gold);padding-left:8px}
+.yn-sub.hidden{display:none}
+.yn-btns{display:flex;gap:8px}
+.yn-btn{flex:1;border:1.5px solid #DDD;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;background:#fff;transition:all 0.15s}
+.yn-btn.yes.sel{border-color:var(--purple);background:var(--purple-light);color:var(--purple)}
+.yn-btn.no.sel{border-color:var(--red);background:var(--red-light);color:var(--red)}
+.yn-btn:active{transform:scale(0.97)}
+
+/* テキスト入力 */
+.fields{display:flex;flex-direction:column;gap:10px}
+.field-group{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:700;color:var(--purple);letter-spacing:0.5px}
+.field input,.field select{border:1.5px solid #DDD;border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;color:var(--text);background:#fff;width:100%;outline:none;transition:border 0.15s}
+.field input:focus,.field select:focus{border-color:var(--purple)}
+.field input.err,.field select.err{border-color:var(--red);background:var(--red-light)}
+
+/* 住宅 */
+.housing-section{margin-bottom:14px}
+.housing-label{font-size:11px;font-weight:700;color:var(--purple-mid);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.housing-label::before{content:'';width:3px;height:12px;background:var(--gold);border-radius:2px;display:inline-block}
+.loan-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.loan-label{font-size:12px;color:var(--muted)}
+.loan-input{border:1.5px solid #DDD;border-radius:8px;padding:7px 10px;font-size:13px;width:100px;font-family:inherit}
+.loan-input:focus{outline:none;border-color:var(--purple)}
+
+/* エラーメッセージ */
+.err-msg{display:none;background:#FFF0F0;border:1px solid #FFCCCC;border-radius:10px;padding:10px 14px;font-size:12px;color:var(--red);margin-top:8px;font-weight:500}
+.err-msg.show{display:block}
+
+/* ナビ */
+.nav{display:flex;gap:10px;margin:16px 0 8px;max-width:480px;margin-left:auto;margin-right:auto;padding:0 12px}
+.btn-back{flex:1;background:#fff;border:1.5px solid var(--purple);color:var(--purple);border-radius:14px;padding:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.15s}
+.btn-next{flex:2;background:linear-gradient(135deg,var(--purple),var(--purple-mid));border:none;color:#fff;border-radius:14px;padding:14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity 0.15s}
+.btn-next:active{opacity:0.85;transform:scale(0.99)}
+.btn-back:active{background:var(--purple-light)}
+
+/* 完了 */
+.complete{text-align:center;padding:40px 20px}
+.chick-big{font-size:64px;display:block;margin-bottom:16px;animation:bounce 1s ease infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.complete h2{font-size:22px;font-weight:700;color:var(--purple);margin-bottom:10px}
+.complete p{font-size:14px;color:var(--muted);line-height:1.7}
+.complete-card{background:#fff;border-radius:16px;padding:20px;margin:20px 0;box-shadow:0 2px 12px rgba(91,45,142,0.10)}
+.complete-card .prize{font-size:13px;color:var(--purple-dark);font-weight:700}
+.complete-card .prize span{color:var(--gold);font-size:16px}
+</style>
+</head>
+<body>
+
+<div class="sticky-top">
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <div class="logo"><span class="logo-chick">🐤</span> GHI</div>
+      <div style="color:rgba(255,255,255,0.75);font-size:11px">お客様アンケート</div>
+    </div>
+  </div>
+  <div class="prize-bar">🐤 ご回答いただいた方から抽選で <span>Amazon ギフト券プレゼント（3名様に1人）</span> 🐤</div>
+  <div class="prog-wrap">
+    <div class="prog-wrap-inner">
+      <div class="prog-label">
+        <span id="step-label">1 / 6</span>
+        <span id="step-pct">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="prog"></div></div>
+      <div class="step-dots" id="dots"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- STEP 1: 基本情報 -->
+<div class="step active" id="s1">
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">📋</div>
+      <div class="q-title">基本情報</div>
+      <div class="q-note">すべて入力</div>
+    </div>
+    <div class="card-body fields">
+      <div class="field-group">
+        <div class="field">
+          <label>年齢 *</label>
+          <input type="number" id="age" placeholder="例：35" min="18" max="99">
+        </div>
+        <div class="field">
+          <label>生年月 *</label>
+          <input type="month" id="birth">
+        </div>
+      </div>
+      <div class="field">
+        <label>家族構成 *</label>
+        <select id="family">
+          <option value="">選択してください</option>
+          <option value="独身">独身</option>
+          <option value="既婚・子供なし">既婚（子供なし）</option>
+          <option value="既婚・子供1人">既婚（子供1人）</option>
+          <option value="既婚・子供2人">既婚（子供2人）</option>
+          <option value="既婚・子供3人以上">既婚（子供3人以上）</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="err-msg" id="err1">⚠️ すべての項目を入力・選択してください</div>
+</div>
+
+<!-- STEP 2: Q1+Q2 -->
+<div class="step" id="s2">
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">Q1</div>
+      <div class="q-title">本日のご予定</div>
+      <div class="q-note">ひとつ選択</div>
+    </div>
+    <div class="card-body opts">
+      <button class="opt-btn" data-g="q1" data-v="仕事（移動中・帰宅中・出張中・その他）">仕事（移動中・帰宅中・出張中・その他）</button>
+      <button class="opt-btn" data-g="q1" data-v="休日（月・火・水・木・金・土・日・祝日・不定休）">休日（月・火・水・木・金・土・日・祝日・不定休）</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">Q2</div>
+      <div class="q-title">ご職業</div>
+      <div class="q-note">ひとつ選択</div>
+    </div>
+    <div class="card-body">
+      <div class="opts grid2">
+        <button class="opt-btn" data-g="q2" data-v="会社員（上場）">会社員（上場）</button>
+        <button class="opt-btn" data-g="q2" data-v="会社員（未上場）">会社員（未上場）</button>
+        <button class="opt-btn" data-g="q2" data-v="専門職（資格あり）">専門職（資格あり）</button>
+        <button class="opt-btn" data-g="q2" data-v="専門職（資格なし）">専門職（資格なし）</button>
+        <button class="opt-btn" data-g="q2" data-v="公務員">公務員</button>
+        <button class="opt-btn" data-g="q2" data-v="自営業">自営業</button>
+        <button class="opt-btn" data-g="q2" data-v="契約・派遣社員">契約・派遣社員</button>
+        <button class="opt-btn" data-g="q2" data-v="アルバイト">アルバイト</button>
+        <button class="opt-btn" data-g="q2" data-v="学生">学生</button>
+        <button class="opt-btn" data-g="q2" data-v="その他">その他</button>
+      </div>
+      <div style="margin-top:12px" class="fields">
+        <div class="field-group">
+          <div class="field"><label>業種</label><input type="text" id="industry" placeholder="例：不動産"></div>
+          <div class="field"><label>勤続年数</label><input type="number" id="tenure" placeholder="年" min="0" max="50"></div>
+        </div>
+        <div class="field"><label>最終学歴</label>
+          <select id="edu">
+            <option value="">選択</option>
+            <option>中学卒</option><option>高校卒</option>
+            <option>専門学校卒</option><option>短大卒</option>
+            <option>大学卒</option><option>大学院卒</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="err-msg" id="err2">⚠️ Q1・Q2 どちらも選択してください</div>
+</div>
+
+<!-- STEP 3: Q3 年収 -->
+<div class="step" id="s3">
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">Q3</div>
+      <div class="q-title">年収（総所得額）</div>
+      <div class="q-note">ひとつ選択</div>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="income-btn" data-g="q3" data-v="〜399万円">〜399万円</button>
+        <button class="income-btn" data-g="q3" data-v="400〜449万円">400〜449万円</button>
+        <button class="income-btn" data-g="q3" data-v="450〜499万円">450〜499万円</button>
+        <button class="income-btn" data-g="q3" data-v="500〜599万円">500〜599万円</button>
+        <button class="income-btn" data-g="q3" data-v="600〜699万円">600〜699万円</button>
+        <button class="income-btn" data-g="q3" data-v="700〜799万円">700〜799万円</button>
+        <button class="income-btn" data-g="q3" data-v="800万円以上" style="grid-column:span 2">800万円以上</button>
+      </div>
+    </div>
+  </div>
+  <div class="err-msg" id="err3">⚠️ 年収を選択してください</div>
+</div>
+
+<!-- STEP 4: Q4 お住まい -->
+<div class="step" id="s4">
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">Q4</div>
+      <div class="q-title">お住まい</div>
+      <div class="q-note">ひとつ選択</div>
+    </div>
+    <div class="card-body">
+      <div class="housing-section">
+        <div class="housing-label">賃貸</div>
+        <div class="opts grid2">
+          <button class="opt-btn" data-g="q4" data-v="賃貸マンション">マンション</button>
+          <button class="opt-btn" data-g="q4" data-v="賃貸アパート">アパート</button>
+          <button class="opt-btn" data-g="q4" data-v="賃貸戸建">戸建</button>
+          <button class="opt-btn" data-g="q4" data-v="社宅">社宅</button>
+        </div>
+      </div>
+      <div class="housing-section">
+        <div class="housing-label">家族所有</div>
+        <div class="opts grid2">
+          <button class="opt-btn" data-g="q4" data-v="家族所有マンション（持分あり）">マンション<br><span style="font-size:10px;color:var(--muted)">持分あり</span></button>
+          <button class="opt-btn" data-g="q4" data-v="家族所有戸建（持分あり）">戸建<br><span style="font-size:10px;color:var(--muted)">持分あり</span></button>
+          <button class="opt-btn" data-g="q4" data-v="家族所有マンション（持分なし）">マンション<br><span style="font-size:10px;color:var(--muted)">持分なし</span></button>
+          <button class="opt-btn" data-g="q4" data-v="家族所有戸建（持分なし）">戸建<br><span style="font-size:10px;color:var(--muted)">持分なし</span></button>
+        </div>
+      </div>
+      <div class="housing-section">
+        <div class="housing-label">持家</div>
+        <div class="opts grid3">
+          <button class="opt-btn" data-g="q4" data-v="持家マンション">マンション</button>
+          <button class="opt-btn" data-g="q4" data-v="持家アパート">アパート</button>
+          <button class="opt-btn" data-g="q4" data-v="持家戸建">戸建</button>
+        </div>
+        <div class="loan-row" id="loan-area" style="display:none">
+          <span class="loan-label">住宅ローン</span>
+          <button class="opt-btn" data-g="loan" data-v="なし" style="width:auto;padding:7px 14px;flex:0 0 auto">なし</button>
+          <button class="opt-btn" data-g="loan" data-v="あり" style="width:auto;padding:7px 14px;flex:0 0 auto">あり</button>
+          <div id="loan-amt-wrap" style="display:none;align-items:center;gap:4px">
+            <input class="loan-input" type="number" id="loan-amt" placeholder="残額">
+            <span class="loan-label">万円</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="err-msg" id="err4">⚠️ お住まいを選択してください</div>
+</div>
+
+<!-- STEP 5: Q5 税金・保障 -->
+<div class="step" id="s5">
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">Q5</div>
+      <div class="q-title">税金・保障について</div>
+      <div class="q-note">YES / NO</div>
+    </div>
+    <div class="card-body">
+      <div class="yn-item">
+        <div class="yn-q">所得税・住民税の納税額を把握している</div>
+        <div class="yn-btns">
+          <button class="yn-btn yes" data-g="q5a" data-v="YES">○ YES</button>
+          <button class="yn-btn no"  data-g="q5a" data-v="NO">○ NO</button>
+        </div>
+      </div>
+      <div class="yn-item">
+        <div class="yn-q">所得税・住民税を高いと感じたことがある</div>
+        <div class="yn-btns">
+          <button class="yn-btn yes" data-g="q5b" data-v="YES">○ YES</button>
+          <button class="yn-btn no"  data-g="q5b" data-v="NO">○ NO</button>
+        </div>
+      </div>
+      <div class="yn-item">
+        <div class="yn-q">税金対策をしている</div>
+        <div class="yn-btns">
+          <button class="yn-btn yes" data-g="q5c" data-v="YES" data-sub="q5c-sub">○ YES</button>
+          <button class="yn-btn no"  data-g="q5c" data-v="NO"  data-sub="q5c-sub">○ NO</button>
+        </div>
+        <div class="yn-sub hidden" id="q5c-sub">→ ①ふるさと納税　②住宅ローン減税　③その他</div>
+      </div>
+      <div class="yn-item">
+        <div class="yn-q">老後（年金など）に不安を感じている</div>
+        <div class="yn-btns">
+          <button class="yn-btn yes" data-g="q5d" data-v="YES">○ YES</button>
+          <button class="yn-btn no"  data-g="q5d" data-v="NO">○ NO</button>
+        </div>
+      </div>
+      <div class="yn-item">
+        <div class="yn-q">将来への備えをしている</div>
+        <div class="yn-btns">
+          <button class="yn-btn yes" data-g="q5e" data-v="YES" data-sub="q5e-sub">○ YES</button>
+          <button class="yn-btn no"  data-g="q5e" data-v="NO"  data-sub="q5e-sub">○ NO</button>
+        </div>
+        <div class="yn-sub hidden" id="q5e-sub">
+          YES → ①貯金　②個人年金　③企業年金　④生命保険　⑤その他<br>
+          NO　→ ①考えないといけない　②考えたことがない
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="err-msg" id="err5">⚠️ すべての質問にYES / NOを選択してください</div>
+</div>
+
+<!-- STEP 6: お客様情報 -->
+<div class="step" id="s6">
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">🐤</div>
+      <div class="q-title">お客様情報（ご連絡先）</div>
+      <div class="q-note">すべて必須</div>
+    </div>
+    <div class="card-body fields">
+      <div class="field-group">
+        <div class="field"><label>お名前 *</label><input type="text" id="name" placeholder="山田 太郎"></div>
+        <div class="field"><label>フリガナ *</label><input type="text" id="kana" placeholder="ヤマダ タロウ"></div>
+      </div>
+      <div class="field"><label>ご住所 *</label><input type="text" id="addr" placeholder="〒000-0000 ○○市..."></div>
+      <div class="field-group">
+        <div class="field"><label>携帯電話 *</label><input type="tel" id="tel" placeholder="090-0000-0000"></div>
+        <div class="field"><label>会社名 *</label><input type="text" id="company" placeholder="株式会社○○"></div>
+      </div>
+      <div style="background:var(--gray);border-radius:10px;padding:10px 12px;font-size:10px;color:var(--muted);line-height:1.7;margin-top:4px">
+        個人情報の管理・利用について：ご記入いただいた個人情報は厳重に管理し、新たな商品・サービスのご案内のみに使用いたします。<br>株式会社 GHI
+      </div>
+    </div>
+  </div>
+  <div class="err-msg" id="err6">⚠️ すべての項目を入力してください</div>
+</div>
+
+<!-- COMPLETE -->
+<div class="step" id="s-done">
+  <div class="complete">
+    <span class="chick-big">🐤</span>
+    <h2>ご回答ありがとうございました！</h2>
+    <p>アンケートへのご協力、誠にありがとうございます。<br>抽選結果は後日ご連絡いたします。</p>
+    <div class="complete-card">
+      <div class="prize">🎁 Amazonギフト券 <span>3名様に1人</span> 当たるチャンス！</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">ご登録のご連絡先に結果をお知らせします</div>
+    </div>
+    <p style="font-size:12px;color:var(--muted)">株式会社 GHI</p>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div class="nav" id="nav-area">
+  <button class="btn-back" id="btn-back" style="display:none" onclick="goBack()">← 戻る</button>
+  <button class="btn-next" id="btn-next" onclick="goNext()">次へ →</button>
+</div>
+
+<script>
+const TOTAL = 6;
+let cur = 1;
+const answers = {};
+
+// ドット生成
+const dotsEl = document.getElementById('dots');
+for(let i=1;i<=TOTAL;i++){
+  const d = document.createElement('div');
+  d.className='dot'+(i===1?' active':'');
+  d.id='dot'+i;
+  dotsEl.appendChild(d);
+}
+
+function updateProgress(){
+  const pct = Math.round(((cur-1)/TOTAL)*100);
+  document.getElementById('prog').style.width = pct+'%';
+  document.getElementById('step-pct').textContent = pct+'%';
+  document.getElementById('step-label').textContent = cur<=TOTAL ? cur+' / '+TOTAL : '完了';
+  for(let i=1;i<=TOTAL;i++){
+    const d=document.getElementById('dot'+i);
+    if(d) d.className='dot'+(i===cur?' active':'');
+  }
+  document.getElementById('btn-back').style.display = cur>1?'block':'none';
+  document.getElementById('btn-next').textContent = cur===TOTAL ? '送信 ✓' : '次へ →';
+  if(cur>TOTAL) document.getElementById('nav-area').style.display='none';
+}
+
+function showStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  const el = n>TOTAL ? document.getElementById('s-done') : document.getElementById('s'+n);
+  if(el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ─── バリデーション ───────────────────────────────────
+function validate(step){
+  hideErr(step);
+  switch(step){
+    case 1:{
+      const age = document.getElementById('age').value.trim();
+      const birth = document.getElementById('birth').value;
+      const family = document.getElementById('family').value;
+      if(!age || !birth || !family){
+        showErr(1); return false;
+      }
+      return true;
+    }
+    case 2:{
+      if(!answers['q1'] || !answers['q2']){
+        showErr(2); return false;
+      }
+      return true;
+    }
+    case 3:{
+      if(!answers['q3']){
+        showErr(3); return false;
+      }
+      return true;
+    }
+    case 4:{
+      // Q4はどのカテゴリでも1つ選択されていればOK
+      if(!answers['q4']){
+        showErr(4); return false;
+      }
+      return true;
+    }
+    case 5:{
+      const q5keys = ['q5a','q5b','q5c','q5d','q5e'];
+      for(const k of q5keys){
+        if(!answers[k]){ showErr(5); return false; }
+      }
+      return true;
+    }
+    case 6:{
+      const fields = ['name','kana','addr','tel','company'];
+      let ok = true;
+      fields.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el.value.trim()){
+          el.classList.add('err');
+          ok = false;
+        } else {
+          el.classList.remove('err');
+        }
+      });
+      if(!ok){ showErr(6); return false; }
+      return true;
+    }
+  }
+  return true;
+}
+
+function showErr(n){
+  const el = document.getElementById('err'+n);
+  if(el){ el.classList.add('show'); }
+}
+function hideErr(n){
+  const el = document.getElementById('err'+n);
+  if(el){ el.classList.remove('show'); }
+}
+
+function goNext(){
+  if(!validate(cur)) return;
+  if(cur===TOTAL){
+    cur = TOTAL+1;
+    updateProgress();
+    showStep(TOTAL+1);
+    return;
+  }
+  cur++;
+  updateProgress();
+  showStep(cur);
+  checkLoan();
+}
+
+function goBack(){
+  if(cur<=1) return;
+  hideErr(cur);
+  cur--;
+  updateProgress();
+  showStep(cur);
+}
+
+function checkLoan(){
+  const v = answers['q4']||'';
+  const la = document.getElementById('loan-area');
+  if(la) la.style.display = v.startsWith('持家') ? 'flex' : 'none';
+}
+
+// 入力フィールドのエラー解除
+['name','kana','addr','tel','company'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', ()=>{ el.classList.remove('err'); hideErr(6); });
+});
+
+// 選択ボタン
+document.querySelectorAll('.opt-btn, .income-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    const g = this.dataset.g;
+    const v = this.dataset.v;
+    answers[g] = v;
+    document.querySelectorAll('[data-g="'+g+'"]').forEach(b=>b.classList.remove('sel'));
+    this.classList.add('sel');
+    // エラー消去
+    if(g==='q1'||g==='q2') hideErr(2);
+    if(g==='q3') hideErr(3);
+    if(g==='q4'){ hideErr(4); checkLoan(); }
+    if(g==='loan'){
+      const wrap = document.getElementById('loan-amt-wrap');
+      if(wrap) wrap.style.display = v==='あり'?'flex':'none';
+    }
+  });
+});
+
+// YES/NOボタン
+document.querySelectorAll('.yn-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    const g = this.dataset.g;
+    const v = this.dataset.v;
+    const subId = this.dataset.sub;
+    answers[g] = v;
+    document.querySelectorAll('[data-g="'+g+'"]').forEach(b=>b.classList.remove('sel'));
+    this.classList.add('sel');
+    hideErr(5);
+    if(subId){
+      const sub = document.getElementById(subId);
+      if(sub){
+        if(v==='YES' && g==='q5c') sub.classList.remove('hidden');
+        else if(g==='q5e') sub.classList.remove('hidden');
+        else sub.classList.add('hidden');
+      }
+    }
+  });
+});
+
+updateProgress();
+</script>
+</body>
+</html>
