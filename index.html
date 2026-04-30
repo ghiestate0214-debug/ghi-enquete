@@ -498,8 +498,51 @@ function hideErr(n){
 function goNext(){
   if(!validate(cur)) return;
   if(cur===TOTAL){
-    // Google フォームに回答を送信
-    window.location.href = 'https://forms.gle/NkbE5gEvVaFuvdfT6';
+    // 送信ボタンを無効化
+    const btn = document.getElementById('btn-next');
+    btn.textContent = '送信中...';
+    btn.disabled = true;
+
+    // 回答データを収集
+    const data = {
+      age:     document.getElementById('age').value,
+      birth:   document.getElementById('birth').value,
+      family:  document.getElementById('family').value,
+      q1:      answers['q1'] || '',
+      q2:      answers['q2'] || '',
+      industry:document.getElementById('industry').value,
+      tenure:  document.getElementById('tenure').value,
+      edu:     document.getElementById('edu').value,
+      q3:      answers['q3'] || '',
+      q4:      answers['q4'] || '',
+      loan:    answers['loan'] || '',
+      q5a:     answers['q5a'] || '',
+      q5b:     answers['q5b'] || '',
+      q5c:     answers['q5c'] || '',
+      q5d:     answers['q5d'] || '',
+      q5e:     answers['q5e'] || '',
+      name:    document.getElementById('name').value,
+      kana:    document.getElementById('kana').value,
+      addr:    document.getElementById('addr').value,
+      tel:     document.getElementById('tel').value,
+      company: document.getElementById('company').value
+    };
+
+    // Apps Script に送信
+    fetch('https://script.google.com/macros/s/AKfycbyfQ1B3lEDnRY6n0LIToXemBlabkqxLL2Qq3lPI0gA0bEJ5LX35HIqjqMAcVz_56_hhuw/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    }).then(() => {
+      cur = TOTAL+1;
+      updateProgress();
+      showStep(TOTAL+1);
+    }).catch(() => {
+      cur = TOTAL+1;
+      updateProgress();
+      showStep(TOTAL+1);
+    });
     return;
   }
   cur++;
